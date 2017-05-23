@@ -10,6 +10,7 @@ Note: only simple UDP has been tested.
 import socket
 import struct
 
+
 from . import oscchannel
 from .oscnettools import network_getaddrinfo, resolve_dns_identification
 from . import oscscheduling
@@ -139,6 +140,8 @@ class UdpMcChannel(oscchannel.TransportChannel):
         self.udpsockspec = None
         self.mcast_enabled = options.get('mcast_enabled', False)
         self.bcast_enabled = options.get('bcast_enabled', False)
+        #:CODE CHANGED
+        self.mcast_loop = None
         # Note: this automatically call setup_reader_options() or/and
         # setup_writer_options() or/and setup_event_options();
         super().__init__(name, mode, options)
@@ -221,6 +224,7 @@ class UdpMcChannel(oscchannel.TransportChannel):
             if self.udpread_nonblocking:
                 self.udpsock.setblocking(False)
             self.udpsock.bind(self.udpsockspec.sockaddr)
+
             if self.logger is not None:
                 self.logger.info("UDP channel %r open read on %s.",
                                  self.chaname, repr(self.udpsockspec))
@@ -288,11 +292,13 @@ class UdpMcChannel(oscchannel.TransportChannel):
                                     self.udpsockspec.sockaddr[0])
                 if self.udpsockspec.family == socket.AF_INET: # IPv4
                     mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
-                    self.udpsockspec.setsockopt(socket.IPPROTO_IP,
+                    #CODE CHANGED
+                    print (mreq)
+                    self.udpsock.setsockopt(socket.IPPROTO_IP,
                                         socket.IP_ADD_MEMBERSHIP, mreq)
                 elif self.udpsockspec.family == socket.AF_INET6:
                     mreq = group_bin + struct.pack('@I', 0)
-                    self.udpsockspec.setsockopt(socket.IPPROTO_IPV6,
+                    self.udpsock.setsockopt(socket.IPPROTO_IPV6,
                                         socket.IPV6_JOIN_GROUP, mreq)
 
             # Enable broadcast.
@@ -303,7 +309,8 @@ class UdpMcChannel(oscchannel.TransportChannel):
                                 "broadcastt with IPV4 - use multicast for "\
                                 "IPV6 or prefer IPV4.", self.chaname)
                         raise ValueError("no broadcast with IPV6")
-                self.udpsockspec.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+                    #FIXED: changed something
+                self.udpsock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
             if self.logger is not None:
                 self.logger.info("UDP channel %r open write on %s target %s.",
