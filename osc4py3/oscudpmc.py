@@ -309,7 +309,6 @@ class UdpMcChannel(oscchannel.TransportChannel):
             if self.udpsockspec.family == socket.AF_INET: # IPv4
                 mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
                 #CODE CHANGED
-                print (mreq)
                 self.udpsock.setsockopt(socket.IPPROTO_IP,
                                     socket.IP_ADD_MEMBERSHIP, mreq)
             elif self.udpsockspec.family == socket.AF_INET6:
