@@ -286,20 +286,7 @@ class UdpMcChannel(oscchannel.TransportChannel):
                 addr = ("::", self.udpwrite_outport) + addr[2:]
             self.udpsock.bind(addr)
 
-            # Join multicast group.
-            if self.mcast_enabled:
-                group_bin = socket.inet_pton(self.udpsockspec.family,
-                                    self.udpsockspec.sockaddr[0])
-                if self.udpsockspec.family == socket.AF_INET: # IPv4
-                    mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
-                    #CODE CHANGED
-                    print (mreq)
-                    self.udpsock.setsockopt(socket.IPPROTO_IP,
-                                        socket.IP_ADD_MEMBERSHIP, mreq)
-                elif self.udpsockspec.family == socket.AF_INET6:
-                    mreq = group_bin + struct.pack('@I', 0)
-                    self.udpsock.setsockopt(socket.IPPROTO_IPV6,
-                                        socket.IPV6_JOIN_GROUP, mreq)
+
 
             # Enable broadcast.
             if self.bcast_enabled:
@@ -315,6 +302,20 @@ class UdpMcChannel(oscchannel.TransportChannel):
             if self.logger is not None:
                 self.logger.info("UDP channel %r open write on %s target %s.",
                             self.chaname, repr(addr), repr(self.udpsockspec))
+            # Join multicast group.
+        if self.mcast_enabled:
+            group_bin = socket.inet_pton(self.udpsockspec.family,
+                                self.udpsockspec.sockaddr[0])
+            if self.udpsockspec.family == socket.AF_INET: # IPv4
+                mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
+                #CODE CHANGED
+                print (mreq)
+                self.udpsock.setsockopt(socket.IPPROTO_IP,
+                                    socket.IP_ADD_MEMBERSHIP, mreq)
+            elif self.udpsockspec.family == socket.AF_INET6:
+                mreq = group_bin + struct.pack('@I', 0)
+                self.udpsock.setsockopt(socket.IPPROTO_IPV6,
+                                    socket.IPV6_JOIN_GROUP, mreq)
 
     def close(self):
         # Override parent method.
