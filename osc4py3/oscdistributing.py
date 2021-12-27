@@ -90,7 +90,7 @@ def flat_names(names, _out=None):
     else:   # Assume _names is iterable (list, tuple, dict, set...)
         for n in names:
             if isinstance(n, str):     # Avoid too much recursions.
-                _out.add(names)
+                _out.add(n)
             else:
                 flat_names(n, _out)
     return _out
